@@ -2,6 +2,8 @@ package com.makaji.aleksej.documentrecognition;
 
 import android.app.Application;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 
 import org.androidannotations.annotations.EBean;
@@ -59,6 +61,17 @@ public class ImageRepository {
         Drawable drawable = Drawable.createFromStream(inputstream, null);
 
         return drawable;
+    }
+
+    public Bitmap bitmapImage(Integer position) {
+        InputStream inputstream = null;
+        try {
+            inputstream = context.getAssets().open("dataset/" + getAllImages().get(position));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return BitmapFactory.decodeStream(inputstream);
     }
 
 
