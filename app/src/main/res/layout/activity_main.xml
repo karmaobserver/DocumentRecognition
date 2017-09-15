@@ -14,9 +14,15 @@
         />
 
     <Button
-        android:id="@+id/work"
+        android:id="@+id/thresholdImageButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="do work" />
+        android:text="Threshold Image" />
+
+    <Button
+        android:id="@+id/nextImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Check next Image" />
 
 </LinearLayout>
