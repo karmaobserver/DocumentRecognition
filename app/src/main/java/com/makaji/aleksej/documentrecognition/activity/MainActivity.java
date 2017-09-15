@@ -1,25 +1,22 @@
 package com.makaji.aleksej.documentrecognition.activity;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
+import android.util.TimingLogger;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.makaji.aleksej.documentrecognition.ImageRepository;
 import com.makaji.aleksej.documentrecognition.R;
 
-
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.ViewById;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -27,9 +24,6 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-
-import java.io.IOException;
-import java.util.List;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity {
@@ -67,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
 
         Drawable image = imageRepository.drawImageByPosition(IMAGE_POSITION);
         image1.setImageDrawable(image);
-
     }
 
     @Click
@@ -78,7 +71,11 @@ public class MainActivity extends AppCompatActivity {
     @Click
     void nextImage() {
 
+        TimingLogger timings = new TimingLogger(TAG, "countWhitePixels");
+        timings.addSplit("Begin method");
         countWhitePixels(position);
+        timings.addSplit("End method");
+        timings.dumpToLog();
 
         Log.d(TAG, "Is document: " + isDocument);
 
@@ -92,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Do trashhold of image (convert image in binary, white and black pixels)
+     *
      * @param imagePosition Position of image in a list
      */
     public void thresholdImage(Integer imagePosition) {
@@ -104,12 +102,12 @@ public class MainActivity extends AppCompatActivity {
         Utils.bitmapToMat(myBitmap, imageMat);
 
         // now convert to gray
-        Mat grayMat = new Mat ( bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(1));
+        Mat grayMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(1));
         Imgproc.cvtColor(imageMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
 
         // get the thresholded image
-        Mat thresholdMat = new Mat ( bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(1));
-        Imgproc.threshold(grayMat, thresholdMat , 128, 255, Imgproc.THRESH_BINARY);
+        Mat thresholdMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(1));
+        Imgproc.threshold(grayMat, thresholdMat, 128, 255, Imgproc.THRESH_BINARY);
 
         // convert back to bitmap for displaying
         Bitmap resultBitmap = Bitmap.createBitmap(thresholdMat.cols(), thresholdMat.rows(), Bitmap.Config.ARGB_8888);
@@ -125,12 +123,12 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Count white pixels and check if that pixels are more then 40% all pixels
+     *
      * @param imagePosition Position of image in a list
      */
+    @Background
     public void countWhitePixels(Integer imagePosition) {
-
         Bitmap bitmap = imageRepository.bitmapImage(imagePosition);
-
         // first convert bitmap into OpenCV mat object
         Mat imageMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(4));
         Bitmap myBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
@@ -140,12 +138,12 @@ public class MainActivity extends AppCompatActivity {
         int whitePixels = 0;
 
         //x and y are changed in mat
-        for( int y = 0; y < imageMat.rows(); y++ ) {
+        for (int y = 0; y < imageMat.rows(); y++) {
             for (int x = 0; x < imageMat.cols(); x++) {
-                double[] pixel = imageMat.get(y,x);
+                double[] pixel = imageMat.get(y, x);
 
                 //Check pixel tolerance
-                if ((pixel[0]<=255-TOLERANCE) && (pixel[1]<=255 - TOLERANCE) && (pixel[2]<=255 - TOLERANCE)) {
+                if ((pixel[0] <= 255 - TOLERANCE) && (pixel[1] <= 255 - TOLERANCE) && (pixel[2] <= 255 - TOLERANCE)) {
                     blackPixels++;
                 } else {
                     whitePixels++;
@@ -154,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         }
         //check if white pixels are more then 40%
         int pixels = blackPixels + whitePixels;
-        int pixels40percentage = (int)(pixels*(PERCENTAGE/100.0f));
+        int pixels40percentage = (int) (pixels * (PERCENTAGE / 100.0f));
         if (pixels40percentage < whitePixels) {
             isDocument = true;
             documents++;
