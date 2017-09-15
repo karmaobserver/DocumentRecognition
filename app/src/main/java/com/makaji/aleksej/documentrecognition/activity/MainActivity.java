@@ -18,12 +18,15 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
+import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+
+import static org.opencv.android.LoaderCallbackInterface.SUCCESS;
 
 @EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity {
@@ -42,6 +45,34 @@ public class MainActivity extends AppCompatActivity {
 
     Integer position = 1;
 
+    private Mat imageMat;
+
+    @ViewById
+    ImageView image1;
+
+    // async loader of OpenCV4Android lib
+    private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case SUCCESS:
+                {
+                    Log.i("OpenCV", "OpenCV loaded successfully");
+                    imageMat=new Mat();
+                }
+                break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                }
+                break;
+            }
+        }
+    };
+
+    @Bean
+    ImageRepository imageRepository = new ImageRepository();
+
     static {
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "OpenCV not loaded");
@@ -50,17 +81,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @ViewById
-    ImageView image1;
-
-    @Bean
-    ImageRepository imageRepository = new ImageRepository();
-
     @AfterViews
     void init() {
-
         Drawable image = imageRepository.drawImageByPosition(IMAGE_POSITION);
         image1.setImageDrawable(image);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!OpenCVLoader.initDebug()){
+            Log.d("OpenCV", "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, loaderCallback);
+        }else {
+            Log.d("OpenCV", "OpenCV library found inside package. Using it!");
+            loaderCallback.onManagerConnected(SUCCESS);
+        }
     }
 
     @Click
@@ -93,11 +129,10 @@ public class MainActivity extends AppCompatActivity {
      * @param imagePosition Position of image in a list
      */
     public void thresholdImage(Integer imagePosition) {
-
         Bitmap bitmap = imageRepository.bitmapImage(imagePosition);
 
         // first convert bitmap into OpenCV mat object
-        Mat imageMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(4));
+        imageMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(4));
         Bitmap myBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         Utils.bitmapToMat(myBitmap, imageMat);
 
