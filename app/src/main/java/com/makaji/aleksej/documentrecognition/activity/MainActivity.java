@@ -35,6 +35,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.opencv.android.LoaderCallbackInterface.SUCCESS;
@@ -60,6 +61,11 @@ public class MainActivity extends AppCompatActivity {
 
     Mat imageMat;
     Mat imageMat2;
+
+    private int blackPixels2 = 0;
+    private int whitePixels2 = 0;
+
+    private Lock lock2 = new ReentrantLock();
 
     @ViewById
     ImageView image1;
@@ -161,7 +167,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Background
     public void doBackground() {
         TimingLogger timings = new TimingLogger(TAG, "countWhitePixels");
         timings.addSplit("Begin method");
@@ -171,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < 10; i++) {
             //for (int i = 0; i < imageRepository.getAllImages().size(); i++) {
-            countWhitePixels(i);
+            countWhitePixels2(i);
             if (isDocument) {
                 stringBuilder.append(imageRepository.getAllImages().get(i) + " ");
             } else {
@@ -188,6 +193,82 @@ public class MainActivity extends AppCompatActivity {
 
         timings.addSplit("End method");
         timings.dumpToLog();
+    }
+
+    public void countWhitePixels2(int imagePosition) {
+        Bitmap bitmap = imageRepository.bitmapImage(imagePosition);
+        // first convert bitmap into OpenCV mat object
+        Mat imageMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(4));
+        Bitmap myBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        Utils.bitmapToMat(myBitmap, imageMat);
+
+        int xTopValue = imageMat.cols() - 1;
+        int yTopValue = imageMat.rows() - 1;
+
+        recursiveLoop(0, xTopValue, 0 , yTopValue);
+
+        //check if white pixels are more then 40%
+        int pixels = blackPixels2 + whitePixels2;
+        int pixels40percentage = (int) (pixels * (PERCENTAGE / 100.0f));
+        if (pixels40percentage < whitePixels2) {
+            isDocument = true;
+            documents++;
+        } else {
+            isDocument = false;
+        }
+    }
+
+    @Background
+    public void recursiveLoop(int xStart, int xEnd, int yStart, int yEnd) {
+
+        double[] pixel;
+        int width = Math.abs(xEnd - xStart) + 1;
+        int height = Math.abs(yEnd - yStart) + 1;
+        if (width == 0 && height ==  0) {
+            pixel = imageMat.get(yStart, xStart);
+
+            checkPixelTolerance(pixel);
+
+            return;
+
+        } else if (width == 0 && height !=  0) {
+            for (int i = 0; i < height; i ++) {
+                pixel = imageMat.get(yStart + i, xStart);
+
+                checkPixelTolerance(pixel);
+            }
+        } else if (width != 0 && height ==  0){
+            for (int i = 0; i < width; i++) {
+                pixel = imageMat.get(yStart, xStart + i);
+
+                checkPixelTolerance(pixel);
+            }
+        } else {
+            int medianOfX = (int) Math.floor((xEnd - xStart) / 2);
+            int medianOfY = (int) Math.floor((yEnd - yStart) / 2);
+
+            recursiveLoop(xStart, medianOfX, yStart, medianOfY);
+            recursiveLoop(medianOfX + 1, xEnd, yStart, medianOfY);
+            recursiveLoop(xStart, medianOfX, medianOfY + 1, yEnd);
+            recursiveLoop(medianOfX + 1, xEnd, medianOfY + 1, yEnd);
+        }
+
+    }
+
+    private void checkPixelTolerance(double[] pixel) {
+        if ((pixel[0] <= 255 - TOLERANCE) && (pixel[1] <= 255 - TOLERANCE) && (pixel[2] <= 255 - TOLERANCE)) {
+
+            lock2.lock();
+            blackPixels2++;
+            lock2.unlock();
+
+        } else {
+
+            lock2.lock();
+            whitePixels2++;
+            lock2.unlock();
+
+        }
     }
 
     /**
