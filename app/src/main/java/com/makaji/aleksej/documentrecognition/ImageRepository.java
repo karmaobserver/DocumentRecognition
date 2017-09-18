@@ -21,6 +21,8 @@ import java.util.Arrays;
 @EBean
 public class ImageRepository {
 
+    private static final String DATASET_NAME = "dataset2";
+
     @RootContext
     Context context;
 
@@ -33,7 +35,7 @@ public class ImageRepository {
         String[] images = new String[0];
 
         try {
-            images = context.getAssets().list("dataset");
+            images = context.getAssets().list(DATASET_NAME);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -53,7 +55,7 @@ public class ImageRepository {
         InputStream inputstream = null;
 
         try {
-            inputstream = context.getAssets().open("dataset/" + getAllImages().get(position));
+            inputstream = context.getAssets().open(DATASET_NAME + "/" + getAllImages().get(position));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -66,7 +68,7 @@ public class ImageRepository {
     public Bitmap bitmapImage(Integer position) {
         InputStream inputstream = null;
         try {
-            inputstream = context.getAssets().open("dataset/" + getAllImages().get(position));
+            inputstream = context.getAssets().open(DATASET_NAME + "/" + getAllImages().get(position));
         } catch (IOException e) {
             e.printStackTrace();
         }
