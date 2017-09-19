@@ -26,16 +26,16 @@
             android:text="Show next image" />
 
         <Button
-            android:id="@+id/detectDocumentButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Detect document" />
-
-        <Button
             android:id="@+id/showPreviouseImage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Show previouse image" />
+
+        <Button
+            android:id="@+id/getWhitePixels"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Count white pixels" />
 
         <Button
             android:id="@+id/thresholdImageButton"
@@ -44,10 +44,10 @@
             android:text="Threshold Image" />
 
         <Button
-            android:id="@+id/nextImage"
+            android:id="@+id/detectDocumentButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Check next Image" />
+            android:text="Detect document" />
 
         <Button
             android:id="@+id/allImages"
@@ -56,7 +56,5 @@
             android:text="Check all Images" />
 
     </LinearLayout>
-
-
 
 </ScrollView>
