@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">DocumentRecognition</string>
+    <string name="loading_data_set">Loading Data set...</string>
 </resources>

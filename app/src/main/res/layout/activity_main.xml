@@ -19,6 +19,31 @@
             android:layout_height="wrap_content"
             />
 
+        <LinearLayout
+            android:id="@+id/loadingSpinnerLinear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ProgressBar
+                android:id="@+id/spinner"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true" />
+
+            <TextView
+                android:id="@+id/loadingDataSet"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="4dp"
+                android:layout_marginLeft="4dp"
+                android:text="@string/loading_data_set"/>
+
+        </LinearLayout>
+
+
         <Button
             android:id="@+id/showNextImage"
             android:layout_width="match_parent"
