@@ -316,8 +316,13 @@ public class MainActivity extends AppCompatActivity {
         Mat grayMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(1));
         Imgproc.cvtColor(imageMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
 
+        Mat scaledImage;
         //cheks image size and scale it if necessary
-        checkImageSize(grayMat);
+        scaledImage = checkImageSize(grayMat);
+
+        if (scaledImage != null) {
+            grayMat = scaledImage;
+        }
 
         // get the thresholded image
         Mat thresholdMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(1));
@@ -344,15 +349,19 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param imageMat
      */
-    private void checkImageSize(Mat imageMat) {
+    private Mat checkImageSize(Mat imageMat) {
+
+        Mat retVal = null;
 
         TimingLogger timings = new TimingLogger(TAG, "time resizing");
         if (imageMat.height() > PREFERRED_SIZE || imageMat.width() > PREFERRED_SIZE) {
 
             //it takes less than 20 milliseconds for scaling
-            scalePicture(imageMat);
+            retVal =  scalePicture(imageMat);
 
         }
+
+        return retVal;
     }
 
     /**
@@ -361,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param imageMat
      */
-    private void scalePicture(Mat imageMat) {
+    private Mat scalePicture(Mat imageMat) {
 
         int pictureWidth = imageMat.width();
         int pictureHeight = imageMat.height();
@@ -379,6 +388,7 @@ public class MainActivity extends AppCompatActivity {
 
         Imgproc.resize(imageMat, destination, szResized, 0, 0, Imgproc.INTER_LINEAR);
 
-        imageMat = destination;
+        return destination;
+
     }
 }
