@@ -30,14 +30,12 @@ import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.features2d.FeatureDetector;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static org.opencv.android.LoaderCallbackInterface.SUCCESS;
 import static org.opencv.core.Core.countNonZero;
@@ -48,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private static final Integer IMAGE_POSITION = 1;
+
+    private static final int PREFERRED_SIZE = 600;
 
     Integer imagePositionIterator = IMAGE_POSITION;
 
@@ -186,7 +186,8 @@ public class MainActivity extends AppCompatActivity {
         // first convert bitmap into OpenCV mat object
         imageMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(4));
         Bitmap myBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        Utils.bitmapToMat(myBitmap, imageMat);
+        Utils.bitmapToMat
+                (myBitmap, imageMat);
 
         // now convert to gray
         Mat grayMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(1));
@@ -315,6 +316,9 @@ public class MainActivity extends AppCompatActivity {
         Mat grayMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(1));
         Imgproc.cvtColor(imageMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
 
+        //cheks image size and scale it if necessary
+        checkImageSize(grayMat);
+
         // get the thresholded image
         Mat thresholdMat = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8U, new Scalar(1));
         Imgproc.threshold(grayMat, thresholdMat, TOLERANCE, 255, Imgproc.THRESH_BINARY);
@@ -332,5 +336,49 @@ public class MainActivity extends AppCompatActivity {
         } else {
             isDocument = false;
         }
+    }
+
+
+    /**
+     * Check if the picture should be scaled
+     *
+     * @param imageMat
+     */
+    private void checkImageSize(Mat imageMat) {
+
+        TimingLogger timings = new TimingLogger(TAG, "time resizing");
+        if (imageMat.height() > PREFERRED_SIZE || imageMat.width() > PREFERRED_SIZE) {
+
+            //it takes less than 20 milliseconds for scaling
+            scalePicture(imageMat);
+
+        }
+    }
+
+    /**
+     * Picture scaling - if at least one picture's dimension is bigger than PREFERRED_SIZE,
+     *                  the picture will be scaled
+     *
+     * @param imageMat
+     */
+    private void scalePicture(Mat imageMat) {
+
+        int pictureWidth = imageMat.width();
+        int pictureHeight = imageMat.height();
+        double scale;
+
+        if (pictureWidth >= pictureHeight) {
+            scale = PREFERRED_SIZE * 1.0 / pictureWidth;
+        } else {
+            scale = PREFERRED_SIZE * 1.0 / pictureHeight;
+        }
+
+        Size szResized = new Size(imageMat.cols() * scale, imageMat.rows() * scale);
+
+        Mat destination = new Mat();
+
+        Imgproc.resize(imageMat, destination, szResized, 0, 0, Imgproc.INTER_LINEAR);
+
+        imageMat = destination;
     }
 }
