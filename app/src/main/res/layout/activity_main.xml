@@ -75,6 +75,18 @@
             android:text="Detect document" />
 
         <Button
+            android:id="@+id/detectDocumentButtonMorph"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detect document MORPH" />
+
+        <Button
+            android:id="@+id/detectDocumentCombine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detect document Combine algorithms" />
+
+        <Button
             android:id="@+id/allImages"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

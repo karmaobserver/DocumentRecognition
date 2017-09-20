@@ -32,7 +32,7 @@ import static com.makaji.aleksej.documentrecognition.R.id.spinner;
 @EBean
 public class ImageRepository {
 
-    private static final String DATASET_NAME = "dataset";
+    private static final String DATASET_NAME = "testset";
 
     private static final String TAG = "MainActivity";
 
